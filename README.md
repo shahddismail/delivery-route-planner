@@ -5,8 +5,7 @@ respecting a maximum trip weight, grouping same-area deliveries
 together where possible, and handling the most urgent deliveries
 first.
 
-Built for the eT3 2026 Software Development Internship technical
-assignment.
+
 
 ## Project structure
 
@@ -56,6 +55,19 @@ id,area,priority,weight_kg
 - `area` — delivery area (free text, e.g. a neighborhood name).
 - `priority` — integer; **lower means more urgent**.
 - `weight_kg` — positive number.
+
+## Additional example input
+
+`example_oversized_package.csv` demonstrates the oversized-package edge
+case: one delivery (12kg) exceeds the vehicle's 10kg capacity, while the
+other is a normal delivery. Run it with:
+
+```bash
+python main.py --input example_oversized_package.csv
+```
+
+The 12kg delivery is reported under "Unassignable deliveries" instead of
+being forced into a trip, while the other delivery is planned normally.
 
 ## Running the tests
 
