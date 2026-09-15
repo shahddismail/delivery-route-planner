@@ -31,8 +31,7 @@ Python 3.8+. No third-party packages -- only the standard library.
    git clone https://github.com/shahddismail/delivery-route-planner.git
    ```
 
-2. Move into the project folder — every command below assumes you're
-   standing inside it:
+2. Make sure to be in the project folder — if not:
    ```bash
    cd delivery-route-planner
    ```
