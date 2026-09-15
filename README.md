@@ -34,7 +34,9 @@ Python 3.8+. No third-party packages -- only the standard library.
    cd delivery-route-planner
 
 3. Run the program on the included sample data:
+   ```bash
    python main.py --input sample_deliveries.csv
+   ```
    (On some systems the command is `python3` instead of `python`.)
 
 Optional flags:
