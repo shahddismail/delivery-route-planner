@@ -26,12 +26,17 @@ delivery-route-planner/
 Python 3.8+. No third-party packages -- only the standard library.
 
 ## How to run
+1. Clone the repository (or download and unzip it if you received it as a
+   ZIP file):
+   git clone https://github.com/yourname/delivery-route-planner.git
 
-From the project folder:
+2. Move into the project folder — every command below assumes you're
+   standing inside it:
+   cd delivery-route-planner
 
-```bash
-python main.py --input sample_deliveries.csv
-```
+3. Run the program on the included sample data:
+   python main.py --input sample_deliveries.csv
+   (On some systems the command is `python3` instead of `python`.)
 
 Optional flags:
 
