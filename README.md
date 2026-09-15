@@ -27,7 +27,7 @@ Python 3.8+. No third-party packages -- only the standard library.
 ## How to run
 1. Clone the repository (or download and unzip it if you received it as a
    ZIP file):
-   git clone https://github.com/yourname/delivery-route-planner.git
+   git clone https://github.com/shahddismail/delivery-route-planner.git
 
 2. Move into the project folder — every command below assumes you're
    standing inside it:
