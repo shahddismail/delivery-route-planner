@@ -196,5 +196,5 @@ I picked this because it's the smallest addition that turns the raw
 grouping into something a dispatcher could actually act on the same
 morning — which trip to send out first, and whether trips are
 generally being packed efficiently — rather than just a data
-structure. It's also available as JSON (`--json report.json`) so it
+structure. It's also available as JSON (`-python main.py --input sample_deliveries.csv --json report.json`) so it
 could be consumed by another system instead of only read by a human.
