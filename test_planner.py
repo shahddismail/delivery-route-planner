@@ -113,6 +113,20 @@ class TestLoadDeliveries(unittest.TestCase):
         self.assertEqual(len(warnings), 2)
         os.remove(path)
 
+    def test_handles_byte_order_mark_from_windows_tools(self):
+        # PowerShell's `Out-File -Encoding utf8` (and some other Windows
+        # tools) prepend a BOM to text files. Without handling it, the
+        # BOM merges into the first header name ("id" becomes "\ufeffid"),
+        # which would make a perfectly valid file look like it's missing
+        # its "id" column.
+        fd, path = tempfile.mkstemp(suffix=".csv")
+        with os.fdopen(fd, "w", encoding="utf-8-sig") as f:
+            f.write("id,area,priority,weight_kg\n1,Maadi,1,2.0\n")
+        deliveries, warnings = load_deliveries(path)
+        self.assertEqual(warnings, [])
+        self.assertEqual(len(deliveries), 1)
+        os.remove(path)
+
     def test_missing_file_reports_warning_not_crash(self):
         deliveries, warnings = load_deliveries("does_not_exist.csv")
         self.assertEqual(deliveries, [])

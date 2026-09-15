@@ -28,7 +28,12 @@ def load_deliveries(path: str) -> Tuple[List[Delivery], List[str]]:
     warnings: List[str] = []
 
     try:
-        with open(path, newline="", encoding="utf-8") as f:
+        # utf-8-sig transparently strips a leading byte-order-mark (BOM)
+        # if one is present -- Windows tools like PowerShell's Out-File
+        # commonly add one, which would otherwise corrupt the first
+        # header name (e.g. "id" becoming "\ufeffid") and make the
+        # column-check below fail even though the file looks correct.
+        with open(path, newline="", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
 
             if reader.fieldnames is None:
