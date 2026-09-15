@@ -5,7 +5,8 @@ respecting a maximum trip weight, grouping same-area deliveries
 together where possible, and handling the most urgent deliveries
 first.
 
-
+Built for the eT3 2026 Software Development Internship technical
+assignment.
 
 ## Project structure
 
@@ -56,18 +57,37 @@ id,area,priority,weight_kg
 - `priority` — integer; **lower means more urgent**.
 - `weight_kg` — positive number.
 
-## Additional example input
+## Example inputs for each edge case
 
-`example_oversized_package.csv` demonstrates the oversized-package edge
-case: one delivery (12kg) exceeds the vehicle's 10kg capacity, while the
-other is a normal delivery. Run it with:
+Beyond `sample_deliveries.csv`, four extra input files are included, one
+per edge case named in the brief. Each can be run the same way:
 
 ```bash
-python main.py --input example_oversized_package.csv
+python main.py --input <filename>
 ```
 
-The 12kg delivery is reported under "Unassignable deliveries" instead of
-being forced into a trip, while the other delivery is planned normally.
+**`example_no_deliveries.csv`** — a file with a header row but no delivery
+rows. Expected output:
+
+```
+No valid deliveries found. Nothing to plan.
+```
+
+**`example_oversized_package.csv`** — one delivery (12kg) exceeds the
+vehicle's 10kg capacity, alongside one normal delivery. The 12kg delivery
+is reported under "Unassignable deliveries" instead of being forced into
+a trip, while the other delivery is planned normally.
+
+**`example_same_priority.csv`** — three deliveries, all priority 1, in
+three different areas. All three are handled (as three separate trips,
+since they don't share an area to group into), each correctly shown at
+the same dispatch priority.
+
+**`example_capacity_exceeded.csv`** — two same-area deliveries (6kg and
+5kg) that together would total 11kg. Even though they share an area and
+would normally be grouped, the second one doesn't fit alongside the
+first (only 4kg of capacity would be left), so it correctly starts a
+second trip instead of pushing the first one over capacity.
 
 ## Running the tests
 
