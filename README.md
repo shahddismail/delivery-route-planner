@@ -33,7 +33,9 @@ Python 3.8+. No third-party packages -- only the standard library.
 
 2. Move into the project folder — every command below assumes you're
    standing inside it:
+   ```bash
    cd delivery-route-planner
+   ```
 
 3. Run the program on the included sample data:
    ```bash
