@@ -73,7 +73,7 @@ Beyond `sample_deliveries.csv`, four extra input files are included, one
 per edge case named in the brief. Each can be run the same way:
 
 ```bash
-python main.py --input <filename>
+python main.py --input <filename.csv>
 ```
 
 **`example_no_deliveries.csv`** — a file with a header row but no delivery
