@@ -115,115 +115,45 @@ tied priorities, a package that would push a trip over capacity).
 
 ### 1. Solution approach, in my own words
 
-Every delivery has to end up in exactly one trip, no trip can exceed
-the weight limit, urgent deliveries should be handled first, and
-deliveries to the same area should travel together when that's
-practical. Two of those rules (priority order and area grouping) can
-pull in different directions, so I treated **priority as the primary
-ordering rule** and **area grouping as an opportunistic optimization**
-applied on top of it, rather than the other way round — the brief
-says urgent deliveries "should be handled first," which reads as the
-harder constraint.
+I treated priority as the main rule and area grouping as a bonus on top of it — the brief says urgent deliveries "should be handled first," which reads as the stricter requirement.
 
-Concretely:
+Steps:
+1. Pull out any delivery heavier than the vehicle capacity first — it can never go on any trip, so it's reported separately instead of crashing or vanishing.
+2. Sort what's left by priority (stable sort, so ties keep their original order).
+3. Go through that list once. For each delivery, try to add it to an already-open trip with the same area that still has room. If none fits, start a new trip.
+4. Order the finished trips by their most urgent delivery, for dispatch.
 
-1. Deliveries heavier than the vehicle capacity are pulled out first
-   — they can never be assigned to any trip, so they're reported
-   separately instead of silently vanishing or crashing the program.
-2. The rest are sorted by priority (ascending), with a **stable
-   sort** so that deliveries sharing a priority keep their original
-   order rather than being reordered arbitrarily.
-3. I walk that list once. For each delivery, I look for an
-   **already-open trip serving the same area with enough remaining
-   capacity** and add it there; if none exists, I open a new trip.
-4. Trips are finally ordered for dispatch by the most urgent priority
-   they contain.
-
-This is a greedy, single-pass algorithm — it never backtracks or
-reshuffles a trip once created. I chose greedy over an optimal
-bin-packing search deliberately (see Q3): it's easy to read, easy to
-reason about, and its behavior in every edge case is predictable,
-which matched what the brief said it was looking for.
+It's a single-pass greedy algorithm — no backtracking. I picked greedy over a more optimal packing search because it's simple to read, easy to trace by hand, and behaves predictably in every edge case.
 
 ### 2. What was the most difficult part of the assignment?
 
-Deciding how to resolve the tension between "group by area" and
-"handle urgent deliveries first" when they conflict — e.g. an urgent
-delivery in an area with no open trip yet, arriving just before a
-low-priority delivery to the same area that would have grouped
-perfectly. There's no single "correct" answer here; I picked the
-interpretation above and made sure it was documented and tested,
-which felt more important than trying to guess the "intended" answer.
+Deciding what to do when "group by area" and "handle urgent ones first" conflict — like an urgent delivery arriving before a same-area delivery that would've grouped nicely. There's no single correct answer here, so I picked one interpretation, documented it, and tested it.
 
 ### 3. Situations where the algorithm may not produce the best possible grouping
 
-Yes. Because it's a single greedy pass with no backtracking, it can
-make locally reasonable choices that aren't globally optimal:
+Yes. Since it's a single pass with no backtracking, it can lock in a choice that isn't ideal:
+- An early trip for an area might get topped up with a small delivery, so a better-fitting one for that same area arrives later and no longer fits — it starts a second, less full trip instead.
+- It never merges two open trips for the same area even if they'd fit together combined, and never reorders deliveries within a priority tier to pack better.
 
-- If an early, low-capacity trip for an area gets "topped up" with a
-  small delivery, a much better-fitting delivery to the same area
-  arriving later may no longer fit, and ends up starting a second,
-  under-utilized trip for that same area.
-- The algorithm never merges two already-open trips serving the same
-  area even if their combined weight would fit under capacity, and it
-  never reorders deliveries within a priority tier to improve
-  packing.
-
-In other words, it solves a variant of bin packing, which is NP-hard
-in general — an exact optimal solution would need to consider
-reordering or repacking, which conflicts with keeping priority order
-intact and would add real complexity for a marginal packing
-improvement.
+This is really a version of bin packing, which is NP-hard in general, so an exact best answer would need reordering/repacking that conflicts with keeping priority order intact.
 
 ### 4. If the input contained 1,000,000 delivery requests...
 
-- **The area-matching step** is the main risk: for each delivery, I
-  scan the list of currently open trips to find one with a matching
-  area and free capacity. In the worst case (many distinct areas, so
-  many simultaneously open trips), that scan is `O(number of open
-  trips)` per delivery, so the whole pass can degrade toward
-  `O(n × number of areas)`. The fix is to index open trips by area
-  (`dict[area] -> list of open trips with room`) so that lookup is
-  `O(1)` instead of a linear scan — straightforward to add, just not
-  necessary at this scale to keep the code readable.
-- **Loading the whole file into memory as a list of `Delivery`
-  objects** would also become significant at 1,000,000 rows (roughly
-  hundreds of MB depending on the object overhead). Streaming/batching
-  the CSV instead of materializing the full list up front would help
-  if memory became a real constraint.
-- Sorting a million items by priority is fine (`O(n log n)`, well
-  within milliseconds in practice) — that part isn't a concern.
+- The area-lookup step is the main risk — for each delivery I scan the open trips list for a matching area. With many distinct areas, that's roughly O(n × areas). Indexing open trips by area (a dict) would make this O(1) instead — easy fix, just not needed at this scale.
+- Holding all deliveries in memory as objects would also add up at a million rows. Streaming the file instead of loading it all at once would help if memory became tight.
+- Sorting a million items by priority is fine — O(n log n) is not a real concern here.
 
 ### 5. What I'd improve with another day
 
-- Index open trips by area (as above) to make the algorithm scale
-  cleanly to very large inputs.
-- Add an optional "best-fit" mode: instead of taking the first open
-  trip that fits, pick the one that leaves the least leftover
-  capacity, which tends to reduce the total number of trips.
-- Support JSON input as well as CSV (the loader already isolates
-  file-reading from the algorithm, so this would be a small addition
-  behind the same `Delivery` interface).
-- Add a way to merge two under-full open trips for the same area at
-  the end of the run, if their combined weight still fits — this
-  would recover some of the packing quality lost to the single-pass
-  greedy approach without abandoning it.
+- Index open trips by area, for the scaling reason above.
+- A "best-fit" mode that picks the trip with the least leftover space instead of the first one that fits, to reduce total trip count.
+- Support JSON input as well as CSV.
+- Merge under-full same-area trips at the end of a run if their combined weight still fits.
 
 ---
 
 ## My extension: trip summary report
 
-On top of the required grouping, `main.py` builds a **trip summary
-report**: for every trip it shows the suggested dispatch order (based
-on the most urgent delivery it contains), which areas it covers,
-which delivery IDs are on it, and its **capacity utilization** (how
-full the vehicle is, as a percentage). It also prints an overall
-average utilization across all trips, and lists any deliveries that
-couldn't be assigned because they exceed the vehicle's capacity.
+On top of the required grouping, `main.py` prints a summary for each trip: suggested dispatch order, which areas it covers, which delivery IDs are on it, and how full it is by weight (a percentage). It also shows an overall average utilization, and lists any deliveries that couldn't be assigned because they're too heavy.
 
-I picked this because it's the smallest addition that turns the raw
-grouping into something a dispatcher could actually act on the same
-morning — which trip to send out first, and whether trips are
-generally being packed efficiently — rather than just a data
-structure. It's also available as JSON (`-python main.py --input sample_deliveries.csv --json report.json`) so it
-could be consumed by another system instead of only read by a human.
+I picked this because it turns the raw grouping into something a dispatcher could actually use that morning — which trip to send first, and whether trips are packed efficiently — instead of just a data structure. It's also available as JSON (`-python main.py --input sample_deliveries.csv --json report.json`) for another system to read.
