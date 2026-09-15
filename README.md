@@ -5,8 +5,7 @@ respecting a maximum trip weight, grouping same-area deliveries
 together where possible, and handling the most urgent deliveries
 first.
 
-Built for the eT3 2026 Software Development Internship technical
-assignment.
+
 
 ## Project structure
 
