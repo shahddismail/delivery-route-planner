@@ -104,7 +104,7 @@ second trip instead of pushing the first one over capacity.
 python -m unittest test_planner.py -v
 ```
 
-There are 10 tests covering the core requirements (capacity never
+There are 11 tests covering the core requirements (capacity never
 exceeded, every delivery placed exactly once, same-area grouping) and
 every edge case listed in the brief (empty input, oversized package,
 tied priorities, a package that would push a trip over capacity).
