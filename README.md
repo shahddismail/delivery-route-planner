@@ -22,7 +22,7 @@ delivery-route-planner/
 
 ## Requirements
 
-Python 3.8+. No third-party packages -- only the standard library.
+Python 3.7+. No third-party packages -- only the standard library.
 
 ## How to run
 1. Clone the repository (or download and unzip it if you received it as a
